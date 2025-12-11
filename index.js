@@ -83,13 +83,42 @@
       }, {});
     };
 
-    function hasShallowProperty(obj, prop) {
-      return (options.includeInheritedProps || (typeof prop === 'number' && Array.isArray(obj)) || hasOwnProperty(obj, prop))
+    var hasShallowProperty
+    if (options.includeInheritedProps) {
+      hasShallowProperty = function (obj, prop) {
+        return typeof prop !== 'undefined' && prop in obj
+      }
+    } else {
+      hasShallowProperty = function (obj, prop) {
+        return (typeof prop === 'number' && Array.isArray(obj)) || hasOwnProperty(obj, prop)
+      }
     }
 
     function getShallowProperty(obj, prop) {
       if (hasShallowProperty(obj, prop)) {
         return obj[prop];
+      }
+    }
+
+    var getShallowPropertySafely
+    if (options.includeInheritedProps) {
+      getShallowPropertySafely = function (obj, currentPath) {
+        if (typeof currentPath !== 'string' && typeof currentPath !== 'number') {
+          currentPath = String(currentPath)
+        }
+        var currentValue = getShallowProperty(obj, currentPath)
+        if (currentPath === '__proto__' || currentPath === 'prototype' ||
+          (currentPath === 'constructor' && typeof currentValue === 'function')) {
+          throw new Error('For security reasons, object\'s magic properties cannot be set')
+        }
+        return currentValue
+      }
+    } else {
+      getShallowPropertySafely = function (obj, currentPath) {
+        if (typeof currentPath !== 'string' && typeof currentPath !== 'number') {
+          currentPath = String(currentPath)
+        }
+        return getShallowProperty(obj, currentPath)
       }
     }
 
@@ -104,7 +133,7 @@
         return set(obj, path.split('.').map(getKey), value, doNotReplace);
       }
       var currentPath = path[0];
-      var currentValue = getShallowProperty(obj, currentPath);
+      var currentValue = getShallowPropertySafely(obj, currentPath);
       if (path.length === 1) {
         if (currentValue === void 0 || !doNotReplace) {
           obj[currentPath] = value;
@@ -236,7 +265,7 @@
       }
 
       var currentPath = getKey(path[0]);
-      var nextObj = getShallowProperty(obj, currentPath)
+      var nextObj = getShallowPropertySafely(obj, currentPath)
       if (nextObj === void 0) {
         return defaultValue;
       }
@@ -265,6 +294,7 @@
       }
 
       var currentPath = getKey(path[0]);
+      getShallowPropertySafely(obj, currentPath);
       if (!hasShallowProperty(obj, currentPath)) {
         return obj;
       }

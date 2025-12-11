@@ -1,7 +1,7 @@
 {
   "name": "object-path",
   "description": "Access deep object properties using a path",
-  "version": "0.11.4",
+  "version": "0.11.4-sp1",
   "author": {
     "name": "Mario Casciaro"
   },
