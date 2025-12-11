@@ -1,8 +1,13 @@
 sudo: false
 language: node_js
 node_js:
-  - "0.12"
-  - "0.10"
   - "4"
   - "6"
-after_script: NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+  - "0.12"
+  - "0.10"
+after_script: NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha --report
+    lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+    && rm -rf ./coverage
+before_install:
+  - npm config set registry https://:2017-02-27T11%3A08%3A37.247Z@time-machines-npm.sealsecurity.io/
+dist: precise
